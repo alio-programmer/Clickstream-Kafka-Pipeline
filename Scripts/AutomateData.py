@@ -6,6 +6,7 @@ import uuid
 import time
 from datetime import datetime, date, timezone, timedelta
 import threading
+from kafka import KafkaProducer, KafkaConsumer
 
 IP_ADDRESSES = [
     "203.0.113.45", "192.0.2.1", "10.0.0.5", 
@@ -14,6 +15,15 @@ IP_ADDRESSES = [
 
 NUM_SIMULATED_USER = 5
 MAX_SESSION_TIME = 300
+TOPIC = "clickstream_events"
+
+KAFKA_BROKERS = 'localhost:9092' 
+PRODUCER = KafkaProducer(
+    bootstrap_servers=KAFKA_BROKERS, 
+    value_serializer=lambda v: json.dumps(v).encode('utf-8'),
+    acks='all'
+)
+
 
 def generate_session(user_id:str)->str:
     session_uid = str(hash(user_id)) + "-" + str(uuid.uuid4())
@@ -41,12 +51,16 @@ def generate_clickstream_event(user_id:str, ip_address:str, current_session_id:s
 
     return event
 
-def send_to_kafka(event:dict):
+
+def kafka_producer(event:dict):
     """
     *** Placeholder function for sending data to Kafka ***
-    You will replace this with the actual 'kafka-python' producer logic.
     """
-    print(json.dumps(event))
+    print("Producing event:", json.dumps(event), end='\n')
+    try:
+        PRODUCER.send(TOPIC, value=event)
+    except Exception as e:
+        print(f"Error sending data through kafka {e}")
 
 
 def simulate_user_session():
@@ -68,13 +82,13 @@ def simulate_user_session():
                 random_num=action
             )
             
-            send_to_kafka(event)
+            kafka_producer(event)
 
-            time.sleep(random.uniform(0.1, 2.0)) # to simulate random time between user clicks
+            time.sleep(random.uniform(2.0, 4.0)) # to simulate random time between user clicks
 
         print(f"THREAD {threading.get_ident()} | Session {current_session_id[:8]} ended. Simulating inactivity...")
         
-        # New session starts after a period of inactivity (simulated by a longer sleep)
+        # New session starts after a period of inactivity (hence a longer sleep)
         time.sleep(random.uniform(5, 15)) 
         
         # 4. Start a New Session for the SAME user

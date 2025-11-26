@@ -1,0 +1,38 @@
+{
+  "partitionToWriteStats" : {
+    "" : [ {
+      "fileId" : "d1053278-34b0-4a60-8a47-b281c07bfb5b-0",
+      "path" : "d1053278-34b0-4a60-8a47-b281c07bfb5b-0_0-54-44_20251125194116113.parquet",
+      "cdcStats" : null,
+      "prevCommit" : "20251125194033272",
+      "numWrites" : 1230,
+      "numDeletes" : 0,
+      "numUpdateWrites" : 0,
+      "numInserts" : 60,
+      "totalWriteBytes" : 517706,
+      "totalWriteErrors" : 0,
+      "tempPath" : null,
+      "partitionPath" : "",
+      "totalLogRecords" : 0,
+      "totalLogFilesCompacted" : 0,
+      "totalLogSizeCompacted" : 0,
+      "totalUpdatedRecordsCompacted" : 0,
+      "totalLogBlocks" : 0,
+      "totalCorruptLogBlock" : 0,
+      "totalRollbackBlocks" : 0,
+      "fileSizeInBytes" : 517706,
+      "minEventTime" : null,
+      "maxEventTime" : null,
+      "runtimeStats" : {
+        "totalScanTime" : 0,
+        "totalUpsertTime" : 688,
+        "totalCreateTime" : 0
+      }
+    } ]
+  },
+  "compacted" : false,
+  "extraMetadata" : {
+    "schema" : "{\"type\":\"record\",\"name\":\"clickstream_bronze_record\",\"namespace\":\"hoodie.clickstream_bronze\",\"fields\":[{\"name\":\"event_id\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"ip_address\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"user_id\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"action\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"timestamp\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"page_url\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"session_id\",\"type\":[\"null\",\"string\"],\"default\":null},{\"name\":\"kafka_ingestion_timestamp\",\"type\":[\"null\",{\"type\":\"long\",\"logicalType\":\"timestamp-micros\"}],\"default\":null},{\"name\":\"kafka_offset\",\"type\":[\"null\",\"long\"],\"default\":null},{\"name\":\"timestamp_ms\",\"type\":[\"null\",\"long\"],\"default\":null}]}"
+  },
+  "operationType" : "UPSERT"
+}

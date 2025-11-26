@@ -1,0 +1,95 @@
+services:
+  zoo1:
+    image: confluentinc/cp-zookeeper:7.8.0
+    hostname: zoo1
+    container_name: zoo1
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_SERVER_ID: 1
+      ZOOKEEPER_SERVERS: zoo1:2888:3888
+    networks:
+      - spark-kafka-network
+
+  kafka1:
+    image: confluentinc/cp-kafka:7.8.0
+    hostname: kafka1
+    container_name: kafka1
+    ports:
+      - "9092:9092"   # Host Port: 9092 -> Container Port: 9092 (External access)
+      - "29092:29092" # Host Port: 29092 -> Container Port: 29092 (Internal broker access)
+      - "9999:9999"
+    environment:
+      # 1. Define all listeners and their ports
+      KAFKA_LISTENERS: PLAINTEXT://kafka1:29092,PLAINTEXT_HOST://0.0.0.0:9092 
+      
+      # 2. Define how each listener is advertised (IMPORTANT)
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka1:29092,PLAINTEXT_HOST://localhost:9092 
+      
+      # 3. Map the security protocols
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      
+      # 4. Specify the internal broker communication name
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      
+      KAFKA_ZOOKEEPER_CONNECT: "zoo1:2181"
+      KAFKA_BROKER_ID: 1
+      KAFKA_LOG4J_LOGGERS: "kafka.controller=INFO,kafka.producer.async.DefaultEventHandler=INFO,state.change.logger=INFO"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_JMX_PORT: 9999
+      KAFKA_JMX_HOSTNAME: kafka1
+      KAFKA_AUTHORIZER_CLASS_NAME: kafka.security.authorizer.AclAuthorizer
+      KAFKA_ALLOW_EVERYONE_IF_NO_ACL_FOUND: "true"
+    depends_on:
+      - zoo1
+    networks:
+      - spark-kafka-network
+
+  spark-master:
+    image: apache/spark:3.5.0-scala2.12-java11-python3-ubuntu
+    hostname: spark-master
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master --host spark-master
+    ports:
+      - "8080:8080" # Spark Master Web UI
+      - "7077:7077" # Spark Master Port
+    environment:
+      SPARK_MODE: master
+      SPARK_LOCAL_DIRS: /tmp
+    volumes:
+      - ./data_lake:/data
+      - ./Pipeline:/opt/spark/work/apps
+    networks:
+      - spark-kafka-network
+
+  spark-worker:
+    image: apache/spark:3.5.0-scala2.12-java11-python3-ubuntu
+    hostname: spark-worker
+    depends_on:
+      - spark-master
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
+    environment:
+      SPARK_MODE: worker
+      SPARK_MASTER_URL: spark://spark-master:7077 # Connects to the master service
+      SPARK_WORKER_CORES: 1
+      SPARK_WORKER_MEMORY: 1g
+      SPARK_LOCAL_DIRS: /tmp
+    volumes:
+      - ./data_lake:/data
+      - ./Pipeline:/opt/spark/work/apps
+    networks:
+      - spark-kafka-network
+
+  init-data-lake:
+    image: busybox
+    command: sh -c "mkdir -p /data/bronze/clickstream && chmod -R 777 /data"
+    volumes:
+      - ./data_lake:/data
+    networks:
+      - spark-kafka-network
+
+networks:
+  spark-kafka-network:
+    driver: bridge

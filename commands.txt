@@ -1,0 +1,6 @@
+docker cp "d:\6monthDE\Clickstream Application\Pipeline\BronzeLayer.py" docker-spark-master-1:/tmp/BronzeLayer.py; docker exec docker-spark-master-1 /opt/spark/bin/spark-submit \
+  --packages org.apache.hudi:hudi-spark3.5-bundle_2.12:0.14.0,org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0 \
+  --master spark://spark-master:7077 \
+  --deploy-mode client \
+  --driver-java-options "-Duser.home=/tmp" \
+  /tmp/BronzeLayer.py
