@@ -36,9 +36,36 @@ Action: Performs Session Windowing and calculates final business metrics (e.g., 
 Storage: PostgreSQL Database (for dashboards).
 
 🛠️ Technology Stack (Big Data & Real-Time)
-Simulation--Python (threading, kafka-python)--Simulates high-volume, concurrent user clickstream events.
-Message Queue--Apache Kafka--Acts as the reliable, high-throughput buffer for real-time events.
-Processing Engine--Apache--Spark Structured Streaming for scalable, fault-tolerant ETL operations (Bronze, Silver, Gold).
-Data Lakehouse--Apache Hudi--Provides ACID transactions, schema evolution, and UPSERT capabilities for the Data Lake layers.
-Data Warehouse--PostgreSQL--Final destination for Gold Layer metrics, optimized for BI reporting.
-Orchestration--Docker--Docker ComposeUsed to manage the local environment for Kafka, Spark, and PostgreSQL services.
+
+1) Simulation--Python (threading, kafka-python)--Simulates high-volume, concurrent user clickstream events.
+  
+2) Message Queue--Apache Kafka--Acts as the reliable, high-throughput buffer for real-time events.
+   
+3) Processing Engine--Apache--Spark Structured Streaming for scalable, fault-tolerant ETL operations (Bronze, Silver, Gold).
+   
+4) Data Lakehouse--Apache Hudi--Provides ACID transactions, schema evolution, and UPSERT capabilities for the Data Lake layers.
+   
+5) Data Warehouse--PostgreSQL--Final destination for Gold Layer metrics, optimized for BI reporting.
+    
+6) Orchestration--Docker--Docker ComposeUsed to manage the local environment for Kafka, Spark, and PostgreSQL services.
+
+✅ Completed Milestones
+Milestone 1 & 2: Data Ingestion & Bronze Layer
+This phase established the reliable flow of raw data from the simulator into the Data Lake.
+
+1. Concurrent Data Generation (producer.py)
+Simulates multiple users simultaneously using Python threading.
+
+Generates well-structured JSON events with essential keys: user_id, session_id, timestamp, and ip_address.
+
+Uses a globally initialized KafkaProducer with graceful shutdown (flush()) for high throughput.
+
+2. Bronze Layer Ingestion (bronze_ingestion.py)
+Reads the raw JSON stream from the clickstream_events Kafka topic.
+
+Writes the stream to the Hudi Data Lake using Delta Lake format for reliability.
+
+Output: Immutable Parquet files and transactional logs in /data/bronze/clickstream/.
+
+Current Architecture State
+The current pipeline successfully moves raw, high-volume data from the source into the first layer of the Data Lakehouse, ready for the Silver layer to pick up.
