@@ -69,3 +69,10 @@ Output: Immutable Parquet files and transactional logs in /data/bronze/clickstre
 
 Current Architecture State
 The current pipeline successfully moves raw, high-volume data from the source into the first layer of the Data Lakehouse, ready for the Silver layer to pick up.
+
+⏭️ Getting Started (Local Setup)
+1) Clone Repository: git clone
+2) Environment Setup: Ensure Docker and Docker Compose are installed: docker-compose up -d
+3) Run Producer Start generating the raw data: python producer.py
+4) Copy Bronze Layer: Copy Bronze layer to spark container: docker cp "<your bronze layer file path>" docker-spark-master-1:/opt/spark/work/apps/BronzeLayer.py
+5) Run Bronze Layer: Start the first processing job (assuming scripts are mounted to /app): docker exec -e HADOOP_USER_NAME=<Hadoop username(if you want hadoop> /opt/spark/bin/spark-submit --packages org.apache.hudi:hudi-spark3.5-bundle_2.12:0.15.0,org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0 --master spark://spark-master:7077 --deploy-mode client --driver-java-options "-Duser.home=/tmp -Dhadoop.conf.dir=/opt/spark/conf/hadoop" --conf spark.hadoop.hadoop.conf.dir=/opt/hadoop/etc/hadoop /opt/spark/work/apps/BronzeLayer.py
